@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR/VR Marketplace - Pricing Plans</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%);
+        }
+        
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.4);
+        }
+        
+        .card-glow {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+        
+        .card-glow-purple {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+        }
+        
+        .card-glow-cyan {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(6, 182, 212, 0.1);
+        }
+        
+        .pricing-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+            backdrop-filter: blur(10px);
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+        
+        .pricing-card.featured {
+            border-color: rgba(168, 85, 247, 0.6);
+        }
+        
+        .pricing-card.featured:hover {
+            border-color: rgba(168, 85, 247, 0.9);
+        }
+        
+        .neon-border {
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            position: relative;
+        }
+        
+        .neon-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+            animation: rotate 4s linear infinite;
+        }
+        
+        .pricing-card:hover .neon-border::before {
+            opacity: 0.3;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .pricing-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        
+        .grid-background {
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white relative overflow-x-hidden">
+    <!-- Animated Background Grid -->
+    <div class="fixed inset-0 grid-background opacity-20 pointer-events-none"></div>
+    
+    <!-- Floating Particles -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-20 left-10 w-2 h-2 bg-cyan-400 rounded-full floating" style="animation-delay: 0s;"></div>
+        <div class="absolute top-40 right-20 w-3 h-3 bg-purple-400 rounded-full floating" style="animation-delay: 1s;"></div>
+        <div class="absolute bottom-40 left-1/4 w-2 h-2 bg-blue-400 rounded-full floating" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/3 right-1/3 w-2 h-2 bg-pink-400 rounded-full floating" style="animation-delay: 1.5s;"></div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="container mx-auto px-4 py-12 md:py-20 relative z-10">
+        <!-- Main Title -->
+        <div class="text-center mb-16 md:mb-24">
+            <div class="inline-block mb-6">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center pulse-ring">
+                        <i class="fas fa-vr-cardboard text-2xl text-white"></i>
+                    </div>
+                    <span class="text-cyan-400 text-sm md:text-base font-semibold tracking-wider uppercase">REALITY LOOPS</span>
+                </div>
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 orbitron gradient-text leading-tight px-4">
+                Choose Your Plan
+            </h1>
+            <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+                Unlock the power of immersive technology with our flexible pricing options
+            </p>
+            
+            <!-- Feature Badges -->
+            <div class="flex flex-wrap justify-center gap-3 md:gap-4 mt-8 px-4">
+                <span class="bg-blue-500/20 border border-blue-500/50 text-blue-300 px-4 py-2 rounded-full text-xs md:text-sm font-medium">
+                    <i class="fas fa-bolt mr-2"></i>Instant Access
+                </span>
+                <span class="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-4 py-2 rounded-full text-xs md:text-sm font-medium">
+                    <i class="fas fa-shield-alt mr-2"></i>Secure Platform
+                </span>
+                <span class="bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 px-4 py-2 rounded-full text-xs md:text-sm font-medium">
+                    <i class="fas fa-sync-alt mr-2"></i>Cancel Anytime
+                </span>
+            </div>
+        </div>
+
+        <!-- Pricing Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10 max-w-7xl mx-auto px-4">
+            
+            <!-- Basic Plan -->
+            <div class="pricing-card rounded-3xl p-6 md:p-8 neon-border card-glow-cyan relative group">
+                <div class="absolute -top-3 -right-3 w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
+                
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center feature-icon shadow-lg shadow-cyan-500/50">
+                        <i class="fas fa-cube text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-3 orbitron text-cyan-400">Basic</h3>
+                    <div class="mb-4">
+                        <span class="text-5xl md:text-6xl font-black text-white orbitron">Free</span>
+                    </div>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed">
+                        Perfect for exploring the AR/VR marketplace
+                    </p>
+                </div>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-cyan-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Browse limited AR/VR assets</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-cyan-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Basic user dashboard</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-cyan-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Community support</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-cyan-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Standard resolution previews</span>
+                    </div>
+                </div>
+                
+                <a href="login.html" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30 text-sm md:text-base flex items-center justify-center">
+                    <i class="fas fa-rocket mr-2"></i>Get Started
+                </a>
+
+            </div>
+
+            <!-- Advance Plan (Featured) -->
+            <div class="pricing-card featured rounded-3xl p-6 md:p-8 neon-border card-glow-purple relative group lg:scale-105">
+                <!-- Popular Badge -->
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-purple-500/50 flex items-center gap-2">
+                        <i class="fas fa-star"></i>
+                        <span>MOST POPULAR</span>
+                    </div>
+                </div>
+                
+                <div class="absolute -top-3 -right-3 w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full opacity-30 blur-2xl group-hover:opacity-50 transition-opacity"></div>
+                
+                <div class="text-center mb-8 mt-4">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center feature-icon shadow-lg shadow-purple-500/50">
+                        <i class="fas fa-rocket text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-3 orbitron text-purple-400">Advanced</h3>
+                    <div class="mb-2">
+                        <span class="text-5xl md:text-6xl font-black text-white orbitron">₹999</span>
+                    </div>
+                    <span class="text-gray-400 text-sm md:text-base">per month</span>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed mt-4">
+                        Unlock advanced creator tools and exclusive content
+                    </p>
+                </div>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-purple-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base font-semibold">Everything in Basic</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-purple-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Premium AR/VR assets library</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-purple-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Priority creator uploads</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-purple-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Email support (24h response)</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-purple-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">HD quality previews</span>
+                    </div>
+                </div>
+                
+                <a href="login.html" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 btn-glow text-sm md:text-base inline-block text-center">
+                    <i class="fas fa-crown mr-2"></i>Subscribe Now
+                </a>
+
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card rounded-3xl p-6 md:p-8 neon-border card-glow relative group md:col-span-2 lg:col-span-1">
+                <div class="absolute -top-3 -right-3 w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
+                
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center feature-icon shadow-lg shadow-blue-500/50">
+                        <i class="fas fa-crown text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-3 orbitron text-blue-400">Pro</h3>
+                    <div class="mb-2">
+                        <span class="text-5xl md:text-6xl font-black text-white orbitron">₹1999</span>
+                    </div>
+                    <span class="text-gray-400 text-sm md:text-base">per month</span>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed mt-4">
+                        For professionals building immersive experiences
+                    </p>
+                </div>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base font-semibold">Everything in Advance</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Commercial usage rights</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Dedicated support team</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">Early access to new releases</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">4K quality downloads</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-check text-blue-400 text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 text-sm md:text-base">API access & integrations</span>
+                    </div>
+                </div>
+                
+                <a href="login.html" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/30 text-sm md:text-base inline-block text-center">
+                    <i class="fas fa-bolt mr-2"></i>Upgrade to Pro
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Comparison Table Section -->
+        <div class="mt-20 md:mt-32 max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 orbitron gradient-text">
+                Compare All Features
+            </h2>
+            
+            <div class="bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-blue-500/30 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-800/50">
+                            <tr>
+                                <th class="px-4 md:px-6 py-4 text-sm md:text-base font-semibold text-gray-300">Features</th>
+                                <th class="px-4 md:px-6 py-4 text-center text-sm md:text-base font-semibold text-cyan-400">Basic</th>
+                                <th class="px-4 md:px-6 py-4 text-center text-sm md:text-base font-semibold text-purple-400">Advance</th>
+                                <th class="px-4 md:px-6 py-4 text-center text-sm md:text-base font-semibold text-blue-400">Pro</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700/50">
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 md:px-6 py-4 text-sm md:text-base text-gray-300">Asset Library Access</td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-cyan-400 text-sm md:text-base">Limited</span></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-purple-400 text-sm md:text-base">Premium</span></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-blue-400 text-sm md:text-base">Unlimited</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 md:px-6 py-4 text-sm md:text-base text-gray-300">Upload Priority</td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-times text-red-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-check text-purple-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-check text-blue-400"></i></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 md:px-6 py-4 text-sm md:text-base text-gray-300">Commercial Rights</td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-times text-red-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-times text-red-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-check text-blue-400"></i></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 md:px-6 py-4 text-sm md:text-base text-gray-300">Support Response</td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-cyan-400 text-sm md:text-base">Community</span></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-purple-400 text-sm md:text-base">24 hours</span></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><span class="text-blue-400 text-sm md:text-base">Priority</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30 transition-colors">
+                                <td class="px-4 md:px-6 py-4 text-sm md:text-base text-gray-300">API Access</td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-times text-red-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-times text-red-400"></i></td>
+                                <td class="px-4 md:px-6 py-4 text-center"><i class="fas fa-check text-blue-400"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="mt-20 md:mt-32 max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 orbitron gradient-text">
+                Frequently Asked Questions
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 hover:border-blue-500/50 transition-colors">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 text-blue-400">Can I upgrade or downgrade my plan?</h3>
+                    <p class="text-gray-400 text-sm md:text-base">Yes! You can change your plan at any time. Upgrades take effect immediately, while downgrades apply at the end of your billing cycle.</p>
+                </div>
+                
+                <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:border-purple-500/50 transition-colors">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 text-purple-400">What payment methods do you accept?</h3>
+                    <p class="text-gray-400 text-sm md:text-base">We accept all major credit cards, debit cards, UPI, net banking, and digital wallets for your convenience.</p>
+                </div>
+                
+                <div class="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-cyan-500/30 p-6 hover:border-cyan-500/50 transition-colors">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 text-cyan-400">Is there a free trial available?</h3>
+                    <p class="text-gray-400 text-sm md:text-base">Our Basic plan is completely free forever! For paid plans, we offer a 14-day money-back guarantee.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="mt-20 md:mt-32 px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto">
+                <div class="text-center p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-users text-2xl text-white"></i>
+                    </div>
+                    <h4 class="text-2xl md:text-3xl font-bold text-white mb-2 orbitron">50K+</h4>
+                    <p class="text-gray-400 text-sm md:text-base">Active Users</p>
+                </div>
+                
+                <div class="text-center p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl border border-purple-500/20 hover:border-purple-500/40 transition-colors">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-box text-2xl text-white"></i>
+                    </div>
+                    <h4 class="text-2xl md:text-3xl font-bold text-white mb-2 orbitron">100K+</h4>
+                    <p class="text-gray-400 text-sm md:text-base">AR/VR Assets</p>
+                </div>
+                
+                <div class="text-center p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-colors">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-star text-2xl text-white"></i>
+                    </div>
+                    <h4 class="text-2xl md:text-3xl font-bold text-white mb-2 orbitron">4.9/5</h4>
+                    <p class="text-gray-400 text-sm md:text-base">User Rating</p>
+                </div>
+                
+                <div class="text-center p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-globe text-2xl text-white"></i>
+                    </div>
+                    <h4 class="text-2xl md:text-3xl font-bold text-white mb-2 orbitron">150+</h4>
+                    <p class="text-gray-400 text-sm md:text-base">Countries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-700/50 mt-20 md:mt-32 relative z-10">
+        <div class="container mx-auto px-4 py-8 md:py-12">
+            <!-- Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-vr-cardboard text-xl text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold orbitron gradient-text">REALITY LOOPS</span>
+                    </div>
+                    <p class="text-gray-400 text-sm md:text-base">
+                        Empowering creators with cutting-edge AR/VR technology and immersive experiences.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">Quick Links</h4>
+                    <ul class="space-y-2 text-sm md:text-base">
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">Connect With Us</h4>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-twitter text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-facebook text-white"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-linkedin text-white"></i>
+                        </a>
+                        <a href="https://www.instagram.com/reality.loops?igsh=MTRiamQwaTBvZmQ5MQ==" class="w-10 h-10 bg-slate-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-instagram text-white"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-t border-gray-700/50 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-400 text-sm md:text-base text-center md:text-left">
+                        © 2025 AR/VR Marketplace. All Rights Reserved.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Terms of Service</a>
+                        <span class="text-gray-600">|</span>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Privacy Policy</a>
+                        <span class="text-gray-600">|</span>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Interactive Effects -->
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe pricing cards
+        document.querySelectorAll('.pricing-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Button click animations
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.5)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s ease-out';
+                ripple.style.pointerEvents = 'none';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Parallax effect for floating particles
+        window.addEventListener('mousemove', (e) => {
+            const particles = document.querySelectorAll('.floating');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.5;
+                const x = (mouseX - 0.5) * speed * 20;
+                const y = (mouseY - 0.5) * speed * 20;
+                particle.style.transform = translate(${x}px, ${y}px);
+            });
+        });
+    </script>
+</body>
+</html>
