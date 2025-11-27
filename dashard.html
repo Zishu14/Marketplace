@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .order-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .order-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .badge-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+            }
+            
+            .overlay.active {
+                display: block;
+            }
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-preparing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-delivered {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-lg shadow-lg md:hidden" onclick="toggleSidebar()">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 bg-white shadow-xl flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-utensils text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">RestaurantOS</h1>
+                        <p class="text-xs text-gray-500">Management Hub</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <button onclick="showSection('live-orders')" class="sidebar-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-bell w-5"></i>
+                    <span>Live Orders</span>
+                    <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full badge-pulse">5</span>
+                </button>
+                
+                <button onclick="showSection('orders')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-receipt w-5"></i>
+                    <span>Orders</span>
+                </button>
+                
+                <button onclick="showSection('menu')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-book-open w-5"></i>
+                    <span>Menu</span>
+                </button>
+                
+                <button onclick="showSection('staff')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Staff Management</span>
+                </button>
+                
+                <button onclick="showSection('inventory')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-boxes w-5"></i>
+                    <span>Inventory</span>
+                </button>
+                
+                <button onclick="showSection('supplier')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-truck w-5"></i>
+                    <span>Supplier</span>
+                </button>
+                
+                <button onclick="showSection('analytics')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Analytics</span>
+                </button>
+                
+                <button onclick="showSection('settings')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium text-gray-700">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+            
+            <!-- User Profile -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <img id="user-photo" 
+                    src="https://via.placeholder.com/100" 
+                    alt="User Photo" 
+                    class="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm hover:ring-2 hover:ring-blue-500 transition-all duration-200">
+
+
+                    <div class="flex-1 min-w-0">
+                        <p id="user-name" class="text-sm font-semibold text-gray-800 truncate">Loading...</p>
+                        <p id="user-email" class="text-xs text-gray-500">Fetching email...</p>
+                    </div>
+
+                    <button id="logout-btn" 
+                    class="text-gray-400 hover:text-gray-600 self-start mt-[-6px] transform transition-all duration-200 hover:-translate-y-0.5">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm sticky top-0 z-30">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="ml-12 sm:ml-0">
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800" id="page-title">Live Orders</h2>
+                            <p class="text-sm text-gray-500 mt-1" id="page-subtitle">Monitor and manage incoming orders in real-time</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base">
+                                <i class="fas fa-plus mr-2"></i>New Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <!-- Live Orders Section -->
+                <div id="live-orders" class="content-section active">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="stat-card bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">Pending</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">5</h3>
+                            <p class="text-sm text-gray-500">Awaiting Confirmation</p>
+                        </div>
+                        
+                        <div class="stat-card bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-fire text-blue-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Active</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">12</h3>
+                            <p class="text-sm text-gray-500">Being Prepared</p>
+                        </div>
+                        
+                        <div class="stat-card bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">Ready</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">3</h3>
+                            <p class="text-sm text-gray-500">Ready for Pickup</p>
+                        </div>
+                        
+                        <div class="stat-card bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Today</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">₹45,280</h3>
+                            <p class="text-sm text-gray-500">Total Revenue</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Orders List -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-4 sm:p-6 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-800">Active Orders</h3>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <!-- Order 1 -->
+                            <div class="order-card p-4 sm:p-6 hover:bg-gray-50">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex flex-wrap items-center gap-3 mb-3">
+                                            <span class="text-lg font-bold text-gray-800">#ORD-1234</span>
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-circle text-xs"></i>
+                                                Pending
+                                            </span>
+                                            <span class="text-sm text-gray-500">Table 5</span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <p class="text-sm text-gray-600"><i class="fas fa-pizza-slice mr-2 text-orange-500"></i>2x Margherita Pizza</p>
+                                            <p class="text-sm text-gray-600"><i class="fas fa-glass-martini mr-2 text-blue-500"></i>1x Mojito</p>
+                                            <p class="text-sm text-gray-600"><i class="fas fa-ice-cream mr-2 text-pink-500"></i>1x Chocolate Sundae</p>
+                                        </div>
+                                        <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>5 mins ago</span>
+                                            <span><i class="fas fa-user mr-1"></i>John Doe</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex sm:flex-col items-center sm:items-end gap-3">
+                                        <span class="text-2xl font-bold text-gray-800">₹1,250</span>
+                                        <div class="flex gap-2">
+                                            <button class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                                <i class="fas fa-check mr-1"></i>Accept
+                                            </button>
+                                            <button class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Order 2 -->
+                            <div class="order-card p-4 sm:p-6 hover:bg-gray-50">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex flex-wrap items-center gap-3 mb-3">
+                                            <span class="text-lg font-bold text-gray-800">#ORD-1235</span>
+                                            <span class="status-badge status-preparing">
+                                                <i class="fas fa-circle text-xs"></i>
+                                                Preparing
+                                            </span>
+                                            <span class="text-sm text-gray-500">Table 12</span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <p class="text-sm text-gray-600"><i class="fas fa-hamburger mr-2 text-yellow-600"></i>1x Classic Burger</p>
+                                            <p class="text-sm text-gray-600"><i class="fas fa-drumstick-bite mr-2 text-red-600"></i>1x Chicken Wings</p>
+                                        </div>
+                                        <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>12 mins ago</span>
+                                            <span><i class="fas fa-user mr-1"></i>Sarah Smith</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex sm:flex-col items-center sm:items-end gap-3">
+                                        <span class="text-2xl font-bold text-gray-800">₹850</span>
+                                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-eye mr-1"></i>View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Order 3 -->
+                            <div class="order-card p-4 sm:p-6 hover:bg-gray-50">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex flex-wrap items-center gap-3 mb-3">
+                                            <span class="text-lg font-bold text-gray-800">#ORD-1236</span>
+                                            <span class="status-badge status-ready">
+                                                <i class="fas fa-circle text-xs"></i>
+                                                Ready
+                                            </span>
+                                            <span class="text-sm text-gray-500">Table 8</span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <p class="text-sm text-gray-600"><i class="fas fa-fish mr-2 text-cyan-600"></i>1x Grilled Salmon</p>
+                                            <p class="text-sm text-gray-600"><i class="fas fa-wine-glass mr-2 text-purple-600"></i>1x Red Wine</p>
+                                        </div>
+                                        <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>18 mins ago</span>
+                                            <span><i class="fas fa-user mr-1"></i>Mike Johnson</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex sm:flex-col items-center sm:items-end gap-3">
+                                        <span class="text-2xl font-bold text-gray-800">₹1,850</span>
+                                        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-check-double mr-1"></i>Mark Served
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Section -->
+                <div id="orders" class="content-section">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Order History</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">Today</button>
+                                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">This Week</button>
+                                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">This Month</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order ID</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Items</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">#ORD-1230</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Emma Wilson</td>
+                                        <td class="px-4 sm:px-6 py-4 text-sm text-gray-600">3 items</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">₹2,150</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="status-badge status-delivered"><i class="fas fa-circle text-xs"></i>Delivered</span></td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 hours ago</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">#ORD-1229</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">David Brown</td>
+                                        <td class="px-4 sm:px-6 py-4 text-sm text-gray-600">2 items</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">₹1,450</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="status-badge status-delivered"><i class="fas fa-circle text-xs"></i>Delivered</span></td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">3 hours ago</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">#ORD-1228</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Lisa Anderson</td>
+                                        <td class="px-4 sm:px-6 py-4 text-sm text-gray-600">5 items</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">₹3,250</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="status-badge status-delivered"><i class="fas fa-circle text-xs"></i>Delivered</span></td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">4 hours ago</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Menu Section -->
+                <div id="menu" class="content-section">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                        <!-- Menu Item 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop" alt="Pizza" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Margherita Pizza</h4>
+                                        <p class="text-sm text-gray-500">Classic Italian pizza</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Available</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹450</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Item 2 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop" alt="Burger" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Classic Burger</h4>
+                                        <p class="text-sm text-gray-500">Beef patty with cheese</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Available</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹350</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Item 3 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop" alt="Pasta" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Creamy Pasta</h4>
+                                        <p class="text-sm text-gray-500">Alfredo sauce pasta</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Out of Stock</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹380</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Item 4 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop" alt="Salad" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Caesar Salad</h4>
+                                        <p class="text-sm text-gray-500">Fresh greens with dressing</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Available</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹280</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Item 5 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&h=300&fit=crop" alt="Steak" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Grilled Steak</h4>
+                                        <p class="text-sm text-gray-500">Premium beef steak</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Available</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹850</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu Item 6 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop" alt="Dessert" class="w-full h-48 object-cover">
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-1">Chocolate Cake</h4>
+                                        <p class="text-sm text-gray-500">Rich chocolate dessert</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Available</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-800">₹220</span>
+                                    <div class="flex gap-2">
+                                        <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Staff Management Section -->
+                <div id="staff" class="content-section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                        <!-- Staff Member 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop" alt="Staff" class="w-16 h-16 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800">Alex Thompson</h4>
+                                            <p class="text-sm text-gray-500">Head Chef</p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><i class="fas fa-phone mr-2 text-blue-500"></i>+91 98765 43210</p>
+                                        <p><i class="fas fa-envelope mr-2 text-blue-500"></i>alex@restaurant.com</p>
+                                        <p><i class="fas fa-calendar mr-2 text-blue-500"></i>Joined: Jan 2023</p>
+                                    </div>
+                                    <div class="flex gap-2 mt-4">
+                                        <button class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </button>
+                                        <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Staff Member 2 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop" alt="Staff" class="w-16 h-16 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800">Maria Garcia</h4>
+                                            <p class="text-sm text-gray-500">Sous Chef</p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><i class="fas fa-phone mr-2 text-blue-500"></i>+91 98765 43211</p>
+                                        <p><i class="fas fa-envelope mr-2 text-blue-500"></i>maria@restaurant.com</p>
+                                        <p><i class="fas fa-calendar mr-2 text-blue-500"></i>Joined: Mar 2023</p>
+                                    </div>
+                                    <div class="flex gap-2 mt-4">
+                                        <button class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </button>
+                                        <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Staff Member 3 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Staff" class="w-16 h-16 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800">James Wilson</h4>
+                                            <p class="text-sm text-gray-500">Waiter</p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">On Break</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><i class="fas fa-phone mr-2 text-blue-500"></i>+91 98765 43212</p>
+                                        <p><i class="fas fa-envelope mr-2 text-blue-500"></i>james@restaurant.com</p>
+                                        <p><i class="fas fa-calendar mr-2 text-blue-500"></i>Joined: May 2023</p>
+                                    </div>
+                                    <div class="flex gap-2 mt-4">
+                                        <button class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </button>
+                                        <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Staff Member 4 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-4">
+                                <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop" alt="Staff" class="w-16 h-16 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800">Emily Davis</h4>
+                                            <p class="text-sm text-gray-500">Bartender</p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><i class="fas fa-phone mr-2 text-blue-500"></i>+91 98765 43213</p>
+                                        <p><i class="fas fa-envelope mr-2 text-blue-500"></i>emily@restaurant.com</p>
+                                        <p><i class="fas fa-calendar mr-2 text-blue-500"></i>Joined: Feb 2023</p>
+                                    </div>
+                                    <div class="flex gap-2 mt-4">
+                                        <button class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </button>
+                                        <button class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Section -->
+                <div id="inventory" class="content-section">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-4 sm:p-6 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-800">Inventory Levels</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Current Stock</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Min. Required</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-cheese text-orange-600"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-800">Mozzarella Cheese</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Dairy</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">25 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">10 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Good Stock</span>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Reorder</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-drumstick-bite text-red-600"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-800">Chicken Breast</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Meat</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">8 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">15 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Low Stock</span>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Reorder</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-leaf text-green-600"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-800">Fresh Lettuce</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Vegetables</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">12 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">8 kg</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Good Stock</span>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Reorder</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-bread-slice text-yellow-600"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-800">Burger Buns</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">Bakery</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">45 pcs</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600">30 pcs</td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Good Stock</span>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Reorder</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Supplier Section -->
+                <div id="supplier" class="content-section">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <!-- Supplier 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-truck text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800">Fresh Farms Co.</h4>
+                                        <p class="text-sm text-gray-500">Vegetables & Fruits</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                            </div>
+                            <div class="space-y-3 mb-4">
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-user w-5 text-blue-500"></i>
+                                    <span>Contact: Rajesh Kumar</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-phone w-5 text-blue-500"></i>
+                                    <span>+91 98765 11111</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-envelope w-5 text-blue-500"></i>
+                                    <span>contact@freshfarms.com</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-calendar w-5 text-blue-500"></i>
+                                    <span>Last Order: 2 days ago</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                    <i class="fas fa-shopping-cart mr-1"></i>Place Order
+                                </button>
+                                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Supplier 2 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-drumstick-bite text-red-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800">Prime Meats Ltd.</h4>
+                                        <p class="text-sm text-gray-500">Meat & Poultry</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                            </div>
+                            <div class="space-y-3 mb-4">
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-user w-5 text-blue-500"></i>
+                                    <span>Contact: Amit Sharma</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-phone w-5 text-blue-500"></i>
+                                    <span>+91 98765 22222</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-envelope w-5 text-blue-500"></i>
+                                    <span>orders@primemeats.com</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <i class="fas fa-calendar w-5 text-blue-500"></i>
+                                    <span>Last Order: 1 day ago</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                    <i class="fas fa-shopping-cart mr-1"></i>Place Order
+                                </button>
+                                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Supplier 3 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-cheese text-yellow-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-800">Dairy Delights</h4>
+                                        <p class="text-sm text-gray-500">Dairy Products</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-
